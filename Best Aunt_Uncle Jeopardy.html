@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Best Aunt/Uncle Jeopardy</title>
+<style>
+:root{--bg:#eef0fa;--fg:#10132b;--card:#fff;--line:#c9cdea;--blue:#1b2cb5;--tile:#0d1a8f;--gold:#ffd24a;--red:#d8344a;--green:#1f9d55;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1020;--fg:#eef0ff;--card:#171b36;--line:#2b315e}}
+:root[data-theme="dark"]{--bg:#0d1020;--fg:#eef0ff;--card:#171b36;--line:#2b315e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2{margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.land{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:16px}
+input{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);width:100%;margin:6px 0}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 16px;background:var(--blue);color:#fff;cursor:pointer}
+button.alt{background:transparent;color:var(--fg);border:1px solid var(--line)}
+button.ok{background:var(--green)}button.bad{background:var(--red)}button.gold{background:var(--gold);color:#10132b}
+button:disabled{opacity:.45;cursor:default}
+.title{font-family:Georgia,"Times New Roman",serif;color:var(--gold);text-shadow:1px 1px 0 #000;letter-spacing:.03em}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.code{font:800 2rem/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;background:var(--blue);color:var(--gold);padding:8px 14px;border-radius:10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 12px;min-width:120px;cursor:pointer;text-align:center}
+.chip.ctl{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.chip b{display:block;font-size:1.4rem}.chip small{opacity:.7}.neg{color:var(--red)}
+.chip .adj{display:flex;gap:4px;justify-content:center;margin-top:4px}.chip .adj button{padding:2px 9px;font-size:.8rem}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:#000;padding:6px;border-radius:10px;overflow-x:auto}
+.cat,.tile{background:var(--tile);color:var(--gold);display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px}
+.cat{font:700 clamp(.65rem,1.8vw,1.1rem)/1.15 Georgia,serif;text-transform:uppercase;min-height:78px;padding:6px;background:var(--blue)}
+.tile{font:800 clamp(1.1rem,4.2vw,2.8rem) Georgia,serif;min-height:68px;border:0;border-radius:4px;text-shadow:2px 2px 0 #000}
+.tile.used{background:#06093d;color:transparent;text-shadow:none;cursor:default}
+.over{position:fixed;inset:0;background:rgba(5,8,50,.96);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;z-index:5}
+.over .cl{font:700 clamp(1.4rem,4.5vw,3rem)/1.25 Georgia,serif;text-transform:uppercase;max-width:900px}
+.over .meta{color:var(--gold);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.over .ans{font:700 clamp(1.2rem,3.5vw,2.2rem) Georgia,serif;color:var(--gold)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.dd{font:900 clamp(2rem,8vw,5rem) Georgia,serif;color:var(--gold);animation:p 1s infinite alternate}
+@keyframes p{to{transform:scale(1.07)}}
+.buzz{width:min(80vw,320px);height:min(80vw,320px);border-radius:50%;font-size:2.2rem;background:var(--red);border:8px solid #fff3}
+.pv{text-align:center;display:grid;gap:14px;justify-items:center;margin-top:16px}
+.muted{opacity:.7}.err{color:var(--red);font-weight:700}
+.nw{width:auto;max-width:200px;text-align:center}
+</style></head>
+<body><div class="wrap" id="app"></div>
+<script>
+const D=[
+{c:"Major Leagues",q:[["Makaylah is studying this subject.","What is Architecture?"],["XN minored in this topic.","What is Packaging?"],["TN’s major was named this.","What is Visual Communication Design?"],["This was Lauren’s original major.","What is Business?"],["This is Taylor’s minor.","What is Digital Studies?","Also accept any “digital” related answer"]]},
+{c:"Before You Wrek Yourself",q:[["This is what Sophia wrapped her car around.","What is a tree?"],["This is the number of cousins who tore their ACL.","What is two?"],["This caused TN’s second concussion.","What is skiing into a tree?","Must include skiing or tree"],["This part of Taylor’s car was taken off in a hit and run.","What is the side mirror?"],["This is why Carson had to have surgery.","What is a torn labrum?"]]},
+{c:"“What Are You Taking?”",q:[["This common painkiller will kill TN.","What is acetaminophen?"],["This many cousins have taken Oxy (LEGALLY, DON’T WORRY).","What is two?"],["This is the name of Taylor’s SSRI.","What is Lexapro?"],["Edith Ruth and this cousin are both on Prozac.","Who is Makaylah?"],["This cousin is the only cousin on hormonal birth control.","Who is Taylor?"]]},
+{c:"Ex’s and Oh’s",q:[["This is where Lauren had her first date ever.","What is Sea World?"],["This is Sophia’s high school ex.","Who is Luke?"],["This cousin has three exes in the span of one year.","Who is Elise?"],["This location was toured on Carson and Amanda’s first date.","What is SDSU?"],["This is where XN took a date and bailed because the date was so lame.","What are tide pools?"]]},
+{c:"Yak Attack",q:[["This Puerto Rican beverage convinced Taylor to eat beans with her hands.","What is a Piña Colada?"],["This is the material of Lauren’s giant Palm Springs shot glass.","What is a Jell-O shot?"],["This is the event that caused the worst hangover Carson has ever had.","What is Thanksgiving 2024?"],["This is the game that made Taylor vomit on Bac Hiep’s lawn.","What is Rage Cage?"],["XN’s roommate called these people when he thought he had alcohol poisoning.","What are the police?"]]}];
+const BASE_DD=18; // column 4, row 4 (Daily Double from the uploaded board)
+const FINAL={cat:"By the Numbers",q:"This is the age gap between XN and Elise.",a:"What is 17 years?"};
+const $a=document.getElementById('app');
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const btn=(x,c,f)=>{const b=el('button',c,x);b.onclick=f;return b};
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}return null};
+const money=n=>(n<0?'-':'')+'$'+Math.abs(n).toLocaleString();
+const pid=ls('jeo-pid')||Math.random().toString(36).slice(2,10);ls('jeo-pid',pid);
+let room=null,role=null,S=null,peers=[],myName='',code='',lastKey='',lastBuzz=-1,showAns=false,noHost=false;
+
+const val=i=>200*(i%5+1)*S.round;
+const maxWager=id=>Math.max(S.players[id]?Math.max(0,S.players[id].s):0,1000*S.round);
+const clampW=(n,id)=>Math.max(5,Math.min(maxWager(id),Math.floor(+n)||5));
+const pc=m=>{let n=0;while(m){n+=m&1;m>>>=1}return n};
+
+function land(msg){
+  $a.replaceChildren();
+  const h=el('div','top');h.append(el('h1','title','Best Aunt/Uncle Jeopardy'));$a.append(h);
+  const g=el('div','land');
+  const a=el('div','card');a.append(el('h2',0,'Host a game'),el('p','muted','Open this page on the big screen. Players join from their phones with a code.'));
+  a.append(btn('Create game',0,()=>startHost()));
+  if(ls('jeo-host')){a.append(el('p'),btn('Resume last game','alt',()=>startHost(JSON.parse(ls('jeo-host')))))}
+  const b=el('div','card');b.append(el('h2',0,'Join a game'));
+  const n=el('input');n.placeholder='Your name';n.maxLength=14;n.value=ls('jeo-name')||'';
+  const c=el('input');c.placeholder='4-letter code';c.maxLength=4;c.style.textTransform='uppercase';
+  if(location.hash.length==5)c.value=location.hash.slice(1);
+  b.append(n,c,btn('Join',0,()=>{if(!n.value.trim()||c.value.length!=4){land('Enter a name and a 4-letter code.');return}ls('jeo-name',n.value.trim());startPlayer(c.value.toUpperCase(),n.value.trim())}));
+  if(msg)b.append(el('p','err',msg));
+  g.append(a,b);$a.append(g);
+}
+async function getRoom(c){
+  if(!(window.claude&&claude.use))return land('Live play needs this page to be open on claude.ai.'),null;
+  const r=await claude.use('room');
+  if(!r)return land('Rooms are unavailable. Open the shared link while signed in to Claude.'),null;
+  try{return await r.join('jeo-'+c.toLowerCase())}catch(e){land('Could not open the room ('+(e.code||'error')+').');return null}
+}
+async function startHost(saved){
+  const L='BCDFGHJKLMNPRSTVWXZ';
+  code=saved?saved.code:Array.from({length:4},()=>L[Math.random()*L.length|0]).join('');
+  room=await getRoom(code);if(!room)return;role='host';
+  S=saved||{code,round:1,used:0,phase:'board',cur:-1,control:null,dd:[BASE_DD],players:{},buzzOpen:false,seq:1,tried:[],buzzer:null,wager:0,ver:0};
+  room.onPeers(ch=>{peers=ch.peers;hostSync()});
+  room.presence({role:'host'});push();
+}
+async function startPlayer(c,name){
+  code=c;myName=name;room=await getRoom(c);if(!room)return;role='p';
+  room.onPeers(ch=>{peers=ch.peers;playerSync()});
+  room.presence({role:'p',pid,name,buzz:null,wager:null,wk:null});
+  setTimeout(()=>{if(!hostSt()){noHost=true;render()}},6000);render();
+}
+const hostSt=()=>{const h=peers.find(p=>p.presence.role==='host'&&p.presence.st);return h?h.presence.st:null};
+const playerPeers=()=>peers.filter(p=>p.presence.role==='p'&&p.presence.pid);
+
+function push(){S.ver++;ls('jeo-host',JSON.stringify(S));room.presence({st:S});render()}
+function hostSync(){
+  let ch=false;
+  for(const p of playerPeers()){const q=p.presence,n=String(q.name||'Player').slice(0,14);
+    if(!S.players[q.pid]){S.players[q.pid]={n,s:0};ch=true;if(!S.control)S.control=q.pid}
+    else if(S.players[q.pid].n!==n){S.players[q.pid].n=n;ch=true}}
+  if(S.phase==='clue'&&S.buzzOpen&&!S.buzzer){
+    const c=playerPeers().filter(p=>p.presence.buzz===S.seq&&!S.tried.includes(p.presence.pid)&&S.players[p.presence.pid]).sort((a,b)=>a.updatedAt-b.updatedAt)[0];
+    if(c){S.buzzer=c.presence.pid;S.buzzOpen=false;ch=true}}
+  if(ch)push();else{const k=key();if(k!==lastKey)render()}
+}
+const wagerPeer=()=>{const p=playerPeers().find(p=>p.presence.pid===S.control&&p.presence.wk===S.cur);return p&&p.presence.wager};
+const key=()=>role==='host'?S.ver+'|'+wagerPeer()+'|'+playerPeers().length+'|'+showAns+'|'+(S.fo||[]).map(id=>(finalLocked(id,'w')?1:0)+''+(finalLocked(id,'a')?1:0)).join(''):'';
+function playerSync(){const s=hostSt();if(s){noHost=false;if(!S||s.ver!==S.ver){S=s;render()}else S=s}}
+
+/* ---- host actions ---- */
+function pick(i){
+  if(S.used>>>i&1)return;
+  S.cur=i;S.seq++;S.tried=[];S.buzzer=null;S.buzzOpen=false;S.wager=0;showAns=false;
+  S.phase=(S.dd.includes(i)&&S.control)?'wager':'clue';push();
+}
+function finish(){S.used|=1<<S.cur;S.phase='answer';S.buzzOpen=false;S.buzzer=null}
+function judge(ok){
+  const dd=S.phase==='dd',id=dd?S.control:S.buzzer,p=S.players[id];if(!p)return;
+  const v=dd?S.wager:val(S.cur);p.s+=ok?v:-v;
+  if(ok){S.control=id;finish()}
+  else if(dd)finish();
+  else{S.tried.push(id);S.buzzer=null;S.seq++;if(S.tried.length>=Object.keys(S.players).length)finish();else S.buzzOpen=true}
+  showAns=false;push();
+}
+function startFinal(){
+  if(pc(S.used)<25&&!confirm('Some clues are still on the board. Start Final Jeopardy anyway?'))return;
+  const ids=Object.keys(S.players).filter(id=>S.players[id].s>0).sort((a,b)=>S.players[a].s-S.players[b].s);
+  Object.assign(S,{phase:ids.length?'fwager':'final',fo:ids,fw:{},fa:{},fi:0,buzzOpen:false,buzzer:null});push()}
+const peerOf=id=>playerPeers().find(p=>p.presence.pid===id);
+const finalLocked=(id,f)=>{const p=peerOf(id);return !!p&&(f==='w'?typeof p.presence.fw==='number':typeof p.presence.fa==='string')};
+function toClue(){S.fo.forEach(id=>{const p=peerOf(id);S.fw[id]=p&&typeof p.presence.fw==='number'?Math.max(0,Math.min(S.players[id].s,Math.floor(p.presence.fw))):0});S.phase='fclue';push()}
+function toReveal(){S.fo.forEach(id=>{const p=peerOf(id);S.fa[id]=p&&typeof p.presence.fa==='string'?p.presence.fa.slice(0,60):''});S.phase='freveal';S.fi=0;push()}
+function judgeF(ok){const id=S.fo[S.fi],w=S.fw[id]||0;S.players[id].s+=ok?w:-w;S.fi++;if(S.fi>=S.fo.length)S.phase='final';push()}
+
+/* ---- render ---- */
+function render(){
+  lastKey=key();const y=scrollY;
+  $a.replaceChildren(role==='host'?hostView():playerView());scrollTo(0,y);
+}
+function hostView(){
+  const f=document.createDocumentFragment(),t=el('div','top');
+  const l=el('div');l.append(el('h1','title','Jeopardy'),el('div','muted','Join with the code on your phone'));
+  const c=el('div','code',code);t.append(l,c);
+  const r=el('div','row');if(S.phase==='board'||S.phase==='over')r.append(btn('Final Jeopardy','alt',startFinal));
+  r.append(btn('Exit','alt',()=>{ls('jeo-host','');location.reload()}));t.append(r);f.append(t);
+  const ch=el('div','chips');const ids=Object.keys(S.players);
+  if(!ids.length)ch.append(el('div','muted','Waiting for players to join…'));
+  ids.forEach(id=>{const p=S.players[id],e=el('div','chip'+(S.control==id?' ctl':''));
+    const on=playerPeers().some(q=>q.presence.pid===id);
+    e.append(el('small',0,(S.control==id?'👑 ':'')+p.n+(on?'':' (away)')),el('b',p.s<0?'neg':'',money(p.s)));
+    const a=el('div','adj');[-100,100].forEach(d=>a.append(btn(d>0?'+100':'−100','alt',ev=>{ev.stopPropagation();p.s+=d;push()})));e.append(a);
+    e.onclick=()=>{S.control=id;push()};ch.append(e)});
+  f.append(ch);
+  const bd=el('div','board');D.forEach(c=>bd.append(el('div','cat',c.c)));
+  for(let r=0;r<5;r++)for(let k=0;k<5;k++){const i=k*5+r,u=S.used>>>i&1;
+    const b=el('button','tile'+(u?' used':''),u?'':'$'+200*(r+1)*S.round);b.disabled=!!u||S.phase!=='board';b.onclick=()=>pick(i);bd.append(b)}
+  f.append(bd,el('p','muted','Click a score chip to hand that player control of the board. Players only see the buzzer once you open it.'));
+  if(S.phase==='final')f.append(finalOverlay());
+  else if(S.phase==='fwager'||S.phase==='fclue'||S.phase==='freveal')f.append(finalFlow());
+  else if(pc(S.used)==25&&S.phase==='board'){const o=overlay();
+    o.append(el('div','dd','Board cleared!'),el('div','cl','Ready for Final Jeopardy?'));
+    const r=el('div','row');r.append(btn('Start Final Jeopardy','gold',startFinal),btn('Back to board','alt',()=>{S.phase='over';push()}));o.append(r);f.append(o)}
+  else if(S.phase!=='board'&&S.phase!=='over')f.append(clueOverlay());
+  return f;
+}
+function overlay(){return el('div','over')}
+function finalFlow(){
+  const o=overlay(),ph=S.phase,rw=el('div','row');o.append(el('div','meta','Final Jeopardy'));
+  const stat=f=>el('div','muted',S.fo.map(id=>S.players[id].n+(finalLocked(id,f)?' ✓':' …')).join('   ·   '));
+  if(ph==='fwager'){
+    o.append(el('div','dd',FINAL.cat),el('div','cl','Place your wagers on your phones'),stat('w'));
+    const sk=Object.keys(S.players).filter(id=>!S.fo.includes(id));
+    if(sk.length)o.append(el('div','muted','Sitting out (score $0 or less): '+sk.map(id=>S.players[id].n).join(', ')));
+    rw.append(btn('Lock wagers & show clue','gold',toClue));
+  }else if(ph==='fclue'){
+    o.append(el('div','cl',FINAL.q),el('div','muted','Type your answer on your phone and lock it in'),stat('a'));
+    rw.append(btn('Lock answers & reveal','gold',toReveal));
+  }else{
+    const id=S.fo[S.fi],p=S.players[id];
+    o.append(el('div','cl',FINAL.q),el('div','ans','Correct: '+FINAL.a),el('div','meta',p.n+' · wagered '+money(S.fw[id]||0)+' · has '+money(p.s)),el('div','cl',S.fa[id]?'“'+S.fa[id]+'”':'(no answer)'));
+    rw.append(btn('✓ Correct','ok',()=>judgeF(true)),btn('✗ Incorrect','bad',()=>judgeF(false)));
+  }
+  o.append(rw);return o;
+}
+function finalOverlay(){
+  const o=overlay(),top=Object.values(S.players).sort((a,b)=>b.s-a.s);
+  o.append(el('div','dd','Final scores'),el('div','cl',top.length?top[0].n+' wins with '+money(top[0].s)+'!':'No players'));
+  top.forEach((p,i)=>o.append(el('div','ans',(i+1)+'. '+p.n+' — '+money(p.s))));
+  o.append(btn('Back to board','alt',()=>{S.phase='over';push()}));return o;
+}
+function playerFinal(v,ph){
+  const me=S.players[pid],sc=me?me.s:0,inn=S.fo&&S.fo.includes(pid);
+  v.append(el('div','meta','Final Jeopardy'));
+  if(ph==='final'){const t=Object.values(S.players).sort((a,b)=>b.s-a.s);v.append(el('p',0,t.length?t[0].n+' wins!':''),el('p','muted','Final score: '+money(sc)));return}
+  if(!inn){v.append(el('p','muted',ph==='freveal'?'Watch the screen…':'You need a positive score to play Final Jeopardy. Watch the screen!'));return}
+  if(ph==='fwager'){
+    v.append(el('div','dd',FINAL.cat),el('p',0,'Wager $0 – '+money(sc)));
+    const n=el('input','nw');n.type='number';n.min=0;n.max=sc;n.value=Math.floor(sc/2);const m=el('p','muted','');
+    v.append(n,btn('Lock wager','gold',()=>{const x=Math.max(0,Math.min(sc,Math.floor(+n.value)||0));room.presence({fw:x});m.textContent='Locked: '+money(x)}),m);
+  }else if(ph==='fclue'){
+    v.append(el('p',0,FINAL.q));const a=el('input');a.maxLength=60;a.placeholder='Your answer';const m=el('p','muted','');
+    v.append(a,btn('Lock answer','gold',()=>{room.presence({fa:a.value.trim()});m.textContent='Locked in!'}),m);
+  }else v.append(el('p','muted','Watch the screen…'));
+}
+function clueOverlay(){
+  const o=overlay(),i=S.cur,cl=D[(i/5)|0].q[i%5],cat=D[(i/5)|0].c,ctl=S.players[S.control];
+  const dd=S.dd.includes(i);
+  o.append(el('div','meta',cat+(S.phase==='wager'?'':' — '+(dd?'Daily Double':'$'+val(i)))));
+  const rw=el('div','row');
+  if(S.phase==='wager'){
+    o.append(el('div','dd','Daily Double!'),el('div','cl',(ctl?ctl.n:'Player')+', make your wager'),
+      el('div','muted','Between $5 and '+money(maxWager(S.control))+' · wager is entered on their phone'));
+    const w=el('input','nw');w.type='number';w.placeholder=wagerPeer()?'Their wager: '+money(wagerPeer()):'Waiting for wager…';w.min=5;
+    rw.append(w,btn('Reveal clue','gold',()=>{S.wager=clampW(w.value||wagerPeer()||5,S.control);S.phase='dd';push()}));
+    o.append(rw);
+  }else{
+    o.append(el('div','cl',cl[0]));
+    if(S.phase==='dd')o.append(el('div','meta','Wager: '+money(S.wager)+' · '+(ctl?ctl.n:'')+' answers alone'));
+    if(S.phase==='clue'){
+      const b=S.players[S.buzzer];
+      if(b)o.append(el('div','meta','🔔 '+b.n+' buzzed in'));
+      else if(S.buzzOpen)o.append(el('div','meta','Buzzers open…'+(S.tried.length?' (tried: '+S.tried.map(x=>S.players[x].n).join(', ')+')':'')));
+      else o.append(el('div','muted','Read the clue, then open the buzzers'));
+    }
+    if(showAns||S.phase==='answer')o.append(el('div','ans',cl[1]+(cl[2]?'  ('+cl[2]+')':'')));
+    if(S.phase==='answer')rw.append(btn('Back to board','gold',()=>{S.phase='board';push()}));
+    else{
+      if(S.phase==='clue'&&!S.buzzOpen&&!S.buzzer)rw.append(btn('Open buzzers','gold',()=>{S.seq++;S.buzzOpen=true;push()}));
+      if(S.buzzer||S.phase==='dd')rw.append(btn('✓ Correct','ok',()=>judge(true)),btn('✗ Incorrect','bad',()=>judge(false)));
+      rw.append(btn(showAns?'Hide answer':'Peek answer','alt',()=>{showAns=!showAns;render()}));
+      rw.append(btn('Reveal & skip','alt',()=>{finish();showAns=false;push()}));
+    }
+    o.append(rw);
+  }
+  return o;
+}
+function playerView(){
+  const w=el('div');const top=el('div','top');
+  top.append(el('h2','title','Jeopardy'),el('div','code',code));w.append(top);
+  if(!S){w.append(el('p',noHost?'err':'muted',noHost?'No game found with that code. Check it and try again.':'Connecting…'));
+    if(noHost)w.append(btn('Back','alt',()=>location.reload()));return w}
+  const me=S.players[pid],v=el('div','pv');
+  v.append(el('div','muted',myName),el('h1',me&&me.s<0?'neg':'',money(me?me.s:0)));
+  const ph=S.phase,i=S.cur,ctl=S.players[S.control];
+  if(ph[0]==='f')playerFinal(v,ph);
+  else if(ph==='board'||ph==='over')v.append(el('p',0,S.control==pid?'👑 You’re in control — tell the host which clue!':'Watch the screen…'));
+  else{
+    const cl=D[(i/5)|0].q[i%5];
+    v.append(el('div','meta',D[(i/5)|0].c));
+    if(ph==='wager'){
+      if(S.control==pid){
+        v.append(el('div','dd','Daily Double!'),el('p',0,'Wager $5 – '+money(maxWager(pid))));
+        const n=el('input','nw');n.type='number';n.min=5;n.max=maxWager(pid);n.value=Math.min(maxWager(pid),1000);
+        const m=el('p','muted','');
+        v.append(n,btn('Lock wager','gold',()=>{const x=clampW(n.value,pid);room.presence({wager:x,wk:i});m.textContent='Locked: '+money(x)}),m);
+      }else v.append(el('p',0,(ctl?ctl.n:'Someone')+' hit the Daily Double and is wagering…'));
+    }else{
+      v.append(el('p',0,cl[0]));
+      if(ph==='dd')v.append(el('p','muted',S.control==pid?'Answer out loud! Wager '+money(S.wager):(ctl?ctl.n:'')+' is answering'));
+      if(ph==='clue'){
+        if(S.buzzer){v.append(el('p','meta',S.buzzer==pid?'You’re in — answer!':S.players[S.buzzer].n+' buzzed in'))}
+        else if(S.buzzOpen&&!S.tried.includes(pid)){
+          const b=btn('BUZZ!','buzz',()=>{lastBuzz=S.seq;room.presence({buzz:S.seq});if(navigator.vibrate)navigator.vibrate(60);b.disabled=true});
+          b.disabled=lastBuzz===S.seq;v.append(b);
+        }else v.append(el('p','muted',S.tried.includes(pid)?'You already tried this one.':'Wait for the buzzers to open…'));
+      }
+      if(ph==='answer')v.append(el('div','ans',cl[1]));
+    }
+  }
+  w.append(v);return w;
+}
+land();
+</script></body></html>
