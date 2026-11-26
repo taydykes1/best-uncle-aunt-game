@@ -44,6 +44,9 @@ button:disabled{opacity:.45;cursor:default}
 .nw{width:auto;max-width:200px;text-align:center}
 </style></head>
 <body><div class="wrap" id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 const D=[
 {c:"Major Leagues",q:[["Makaylah is studying this subject.","What is Architecture?"],["XN minored in this topic.","What is Packaging?"],["TN’s major was named this.","What is Visual Communication Design?"],["This was Lauren’s original major.","What is Business?"],["This is Taylor’s minor.","What is Digital Studies?","Also accept any “digital” related answer"]]},
@@ -81,11 +84,51 @@ function land(msg){
   if(msg)b.append(el('p','err',msg));
   g.append(a,b);$a.append(g);
 }
+// Firebase Realtime Database replaces the Claude-only room API.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyASHG4U3UEGffFUAoDfFUZe61kD09-UBAg",
+  authDomain: "best-uncle-aunt-game.firebaseapp.com",
+  databaseURL: "https://best-uncle-aunt-game-default-rtdb.firebaseio.com",
+  projectId: "best-uncle-aunt-game",
+  appId: "1:236634244621:web:ba98838be7ba2256427744"
+};
 async function getRoom(c){
-  if(!(window.claude&&claude.use))return land('Live play needs this page to be open on claude.ai.'),null;
-  const r=await claude.use('room');
-  if(!r)return land('Rooms are unavailable. Open the shared link while signed in to Claude.'),null;
-  try{return await r.join('jeo-'+c.toLowerCase())}catch(e){land('Could not open the room ('+(e.code||'error')+').');return null}
+  if(!window.firebase)return land('Could not load the multiplayer service. Check your internet connection and refresh.'),null;
+  if(!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith('PASTE_'))
+    return land('Multiplayer setup is not finished yet. Add your Firebase web-app config in index.html, then refresh.'),null;
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+    const auth=firebase.auth();
+    if(!auth.currentUser)await auth.signInAnonymously();
+    const base=firebase.database().ref('jeopardyRooms/'+c.toLowerCase());
+    const presenceRef=base.child('presence');
+    let ownRef=null;
+    return {
+      onPeers(callback){
+        presenceRef.on('value',snap=>{
+          const peers=[];
+          snap.forEach(child=>{
+            const p=child.val()||{};
+            peers.push({key:child.key,presence:p,updatedAt:Number(p.updatedAt)||0});
+          });
+          callback({peers});
+        },err=>land('Multiplayer connection failed: '+err.message));
+      },
+      presence(data){
+        if(!ownRef){
+          const key=data.role==='host'?'host':data.pid;
+          if(!key)return;
+          ownRef=presenceRef.child(key);
+          ownRef.onDisconnect().remove();
+        }
+        ownRef.update({...data,updatedAt:firebase.database.ServerValue.TIMESTAMP})
+          .catch(err=>land('Could not sync the game: '+err.message));
+      }
+    };
+  }catch(e){
+    land('Could not connect to Firebase ('+(e.code||e.message||'error')+'). Check the Firebase setup and try again.');
+    return null;
+  }
 }
 async function startHost(saved){
   const L='BCDFGHJKLMNPRSTVWXZ';
